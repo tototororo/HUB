@@ -1,373 +1,211 @@
-from tkinter import *
 import sqlite3
+from tkinter import ttk
+from tkinter import *
+from tkinter import messagebox
 import datetime
-now= datetime.datetime.now()
-################################
-#디비 연동함수
-####insert#####################
+
+
+###################### DB 통신 ###########################
 def db_i(sql):
+    try:
+        con = sqlite3.connect("Hubdb")
+        cur = con.cursor()
+        cur.execute("pragma foreign_keys = 1")
+        cur.execute(sql)
+        con.commit()
+        con.close()
+        messagebox.showinfo("Success Example", "등록 완료")
+    except Exception:
+        messagebox.showerror("Error Example", "등록 불가, 참고 중 이거나 올바르지 않은 값입니다")
+
+
+def db_s(sql):
     con = sqlite3.connect("Hubdb")
     cur = con.cursor()
-    cur.execute("pragma foreign_keys = 1")
-    con.commit()
     cur.execute(sql)
-    con.commit()
-    con.close()
-####select용##########################
-def db_s1(sql):
-    con = sqlite3.connect("Hubdb")
-    cur = con.cursor()
-    cur.execute(sql)
+    result = []
     while True:
-            row = cur.fetchone()
-            if row == None :
-                break
-            print(row)
+        row = cur.fetchone()
+        if row == None:
+            break
+        result.append(row)
     con.close()
+    return result
 
-########################################################
-num = 1
-################################################################
-def okClick1():
-    root.destroy()
-    def okClick1_1():
-        root1.destroy()
-        i1 = input("상품명: ")
-        i2 = input("재고량: ")
-        i3 = input("위 치: ")
-        sql = f"insert into 상품(상품명, 재고량 , 위치) values('{i1}',{i2},'{i3}')"
-        try:
-            db_i(sql)
-            print("입력완료")
-        except:
-            print("없는 위치입니다.")
-    
-    def okClick1_2():
-        root1.destroy()
-        def okClick1_2_1():                              #상품명 변경
-            root1_2.destroy()        
-            i1 = input("상품번호: ")
-            i2 = input("변경할 상품명: ")
-            sql = f"update 상품 set 상품명 = '{i2}' where 상품번호 = {i1}"
-            try:
-                db_i(sql)
-                print("변경완료")
-            except:
-                print("없는 상품입니다")                   
-        def okClick1_2_2():                           
-            root1_2.destroy()                     #재고량 변경
-            i1 = input("상품번호: ")
-            i2 = input("변경할 재고량: ")
-            sql = f"update 상품 set 재고량 = {i2} where 상품번호 = {i1}"
-            try:
-                db_i(sql)
-                print("변경완료")
-            except:
-                print("없는 상품입니다")   
-        def okClick1_2_3():                           
-            root1_2.destroy()                     #위치 변경
-            i1 = input("상품번호: ")
-            i2 = input("변경할 위치: ")
-            sql = f"update 상품 set 위치 = '{i2}' where 상품번호 = {i1}"
-            try:
-                db_i(sql)
-                print("변경완료")
-            except:
-                print("없는 상품입니다")  
-    # 버튼 클릭 이벤트 핸들러
-        root1_2 = Tk()
-        root1_2.geometry("100x200+200+100")
-        lbl = Label(root1_2, text="상품변경")
-        lbl.pack()
-    # 버튼 클릭 이벤트와 핸들러 정의
-        btn1 = Button(root1_2, text="상품명 변경", command=okClick1_2_1)
-        btn1.pack()
-        btn2 = Button(root1_2, text="재고량 변경", command=okClick1_2_2)
-        btn2.pack()
-        btn3 = Button(root1_2, text="위 치 변경", command=okClick1_2_3)
-        btn3.pack()
-        
-    def okClick1_3():
-        root1.destroy()
-        def okClick1_3_1():                           
-            root1_3.destroy()                     #검색
-            def okClick1_3_1_1():                           
-                root1_3_1.destroy()  
-                i1 = input("상품번호: ")
-                sql = f"select * from 상품 where 상품번호 = {i1}"
-                db_s1(sql)
-            def okClick1_3_1_2():                           
-                root1_3_1.destroy()  
-                i1 = input("상품명: ")
-                sql = f"select * from 상품 where 상품명 = '{i1}'"
-                db_s1(sql)  
-            def okClick1_3_1_3():                           
-                root1_3_1.destroy()  
-                i1 = input("재고량: ")
-                sql = f"select * from 상품 where 재고량 = {i1}"
-                db_s1(sql)
-            def okClick1_3_1_4():                           
-                root1_3_1.destroy()  
-                i1 = input("위 치: ")
-                sql = f"select * from 상품 where 위치 = '{i1}'"
-                db_s1(sql)
-              # 버튼 클릭 이벤트 핸들러
-            root1_3_1 = Tk()
-            root1_3_1.geometry("100x200+200+100")
-            lbl = Label(root1_3_1, text="상품검색")
-            lbl.pack()
-        # 버튼 클릭 이벤트와 핸들러 정의
-            btn1 = Button(root1_3_1, text="상품번호로 검색", command=okClick1_3_1_1)
-            btn1.pack()
-            btn2 = Button(root1_3_1, text="상품명으로 검색", command=okClick1_3_1_2)
-            btn2.pack()
-            btn2 = Button(root1_3_1, text="재고량으로 검색", command=okClick1_3_1_3)
-            btn2.pack()
-            btn2 = Button(root1_3_1, text="위치로 검색", command=okClick1_3_1_4)
-            btn2.pack()             
-        def okClick1_3_2():                           
-            root1_3.destroy()                      #전체보기
-            sql = "select * from 상품"
-            db_s1(sql)        
-        # 버튼 클릭 이벤트 핸들러
-        root1_3 = Tk()
-        root1_3.geometry("100x200+200+100")
-        lbl = Label(root1_3, text="상품조회")
-        lbl.pack()
-    # 버튼 클릭 이벤트와 핸들러 정의
-        btn1 = Button(root1_3, text="검색", command=okClick1_3_1)
-        btn1.pack()
-        btn2 = Button(root1_3, text="전체보기", command=okClick1_3_2)
-        btn2.pack()
 
-    def okClick1_4():
-        root1.destroy()
-        i1 = input("상품번호: ")
-        sql = f"delete from 상품 where 상품번호 = {i1}"
-        try:
-            db_i(sql)
-            print("삭제완료")
-        except:
-            print("삭제불가 상품입니다")
-            
-    def okClick1_5():
-        root1.destroy()
-        global num1
-        num1 = 0
-        return
-  
-    while num1: 
-    # 버튼 클릭 이벤트 핸들러
-        root1 = Tk()
-        root1.geometry("100x200+200+100")
-        lbl = Label(root1, text="상품관리")
-        lbl.pack()
-    # 버튼 클릭 이벤트와 핸들러 정의
-        btn1 = Button(root1, text="등록", command=okClick1_1)
-        btn1.pack()
-        btn2 = Button(root1, text="변경", command=okClick1_2)
-        btn2.pack()
-        btn3 = Button(root1, text="조회", command=okClick1_3)
-        btn3.pack()
-        btn4 = Button(root1, text="삭제", command=okClick1_4)
-        btn4.pack()
-        btn5 = Button(root1, text="뒤로", command=okClick1_5)
-        btn5.pack()
-        root1.mainloop()
-#######################################################################################  
-def okClick2():
-    root.destroy()
-    def okClick2_1():
-        root1.destroy()
-        i1 = input("이 름: ")
-        i2 = input("핸드폰번호(-포함): ")
-        i3 = input("주 소: ")
-        i4 = input("상품번호: ")
-        i5 = input("상품수량: ")
-        i6 = now.strftime('%Y-%m-%d')
-        try:
-            sql = f"update 상품 set 재고량 = 재고량 - {i5} where 상품번호 = {i4}"
-            db_i(sql)
-            sql = f"insert into 수령인(이름, 휴대폰번호 , 주소, 상품번호, 상품수량, 주문일자) values('{i1}','{i2}','{i3}',{i4},{i5},'{i6}')"
-            db_i(sql)
-            print("입력완료")
-        except:
-            print("입력불가")
+###################### 윈도우 생성 ##########################
+class WindowsCon:
+    def __init__(self, window, title):
+        self.window = window
+        self.window.title(title)
+        self.window.geometry("400x400+100+100")
+        self.window.resizable(False, False)
 
-    def okClick2_2():
-        root1.destroy()
-        def okClick2_2_1():                           
-            root1_2.destroy()                     #검색
-            def okClick2_2_1_1():                           
-                root1_2_1.destroy()  
-                i1 = input("수령번호: ")
-                sql = f"select * from 수령인 where 수령번호 = {i1}"
-                db_s1(sql)
-            def okClick2_2_1_2():                           
-                root1_2_1.destroy()  
-                i1 = input("상품번호: ")
-                sql = f"select * from 수령인 where 상품번호 = {i1}"
-                db_s1(sql) 
-              # 버튼 클릭 이벤트 핸들러
-            root1_2_1 = Tk()
-            root1_2_1.geometry("100x200+200+100")
-            lbl = Label(root1_2_1, text="주문검색")
-            lbl.pack()
-        # 버튼 클릭 이벤트와 핸들러 정의
-            btn1 = Button(root1_2_1, text="수령번호로 검색", command=okClick2_2_1_1)
-            btn1.pack()
-            btn2 = Button(root1_2_1, text="상품번호로 검색", command=okClick2_2_1_2)
-            btn2.pack()     
-        def okClick2_2_2():                           
-            root1_2.destroy()                      #전체보기
-            sql = "select * from 수령인"
-            db_s1(sql)    
-        # 버튼 클릭 이벤트 핸들러
-        root1_2 = Tk()
-        root1_2.geometry("100x200+200+100")
-        lbl = Label(root1_2, text="주문조회")
-        lbl.pack()
+    # noinspection PyMethodMayBeStatic
+    def select(self, frame, target):
+        self.scrollbar = Scrollbar(frame)
+        self.scrollbar.pack(side="right", fill="y")
+        self.listbox = Listbox(frame, yscrollcommand=self.scrollbar.set, width=50)
+        result = db_s(f"select * from {target}")
+        for line in range(len(result)):
+            self.listbox.insert(line, str(result[line]))
+        self.listbox.pack(side="left", fill="y")
+        self.scrollbar["command"] = self.listbox.yview
+
+    def retry(self, frame, target):
+        self.scrollbar.destroy()
+        self.listbox.destroy()
+        self.select(frame, target)
+
+    # noinspection PyMethodMayBeStatic
+    def create_box(self, frame, name, row):
+        label = Label(frame, text=name)
+        ent = Entry(frame)
+        label.grid(row=row, column=0)
+        ent.grid(row=row, column=1)
+        return ent
+
+
+########################### 상품관리  #####################################
+def con_goods(root):
+    root.destroy()  # 메인화면 종료
+    goods = Tk()  # 창 생성
+    god = WindowsCon(goods, '상품')  # 창 설정
+    notebook = ttk.Notebook(goods, width=400, height=400)  # 노트 생성
+    notebook.pack()
+
+    frame1 = Frame(goods)  # 노트1
+    notebook.add(frame1, text="등록")
+    name_insert = god.create_box(frame1, '상품명', 0)
+    num_insert = god.create_box(frame1, '재고량', 1)
+    point_insert = god.create_box(frame1, '위치', 2)
+    btn_insert = Button(frame1, text='전송', command=lambda: db_i(
+        f"insert into 상품(상품명, 재고량 , 위치) values('{name_insert.get()}',"
+        f"{num_insert.get()},"
+        f"'{point_insert.get()}')"
+    ))
+    btn_insert.grid(row=3, column=1)
+
+    frame2 = Frame(goods)
+    notebook.add(frame2, text="변경")
+    name_change = god.create_box(frame2, '상품명', 0)
+    num_change = god.create_box(frame2, '재고량', 1)
+    point_change = god.create_box(frame2, '위치', 2)
+    primary_change = god.create_box(frame2, '상품번호', 3)
+    btn_change = Button(frame2, text='전송', command=lambda: db_i(
+        f"update 상품 set 상품명 = '{name_change.get()}',"
+        f"재고량 = {num_change.get()},"
+        f"위치 = '{point_change.get()}' "
+        f"where 상품번호 = {primary_change.get()}"
+    ))
+    btn_change.grid(row=4, column=1)
+
+    frame3 = Frame(goods)
+    notebook.add(frame3, text="조회")
+    label_sel = Label(frame3, text='상품번호, 상품명, 재고량, 위치')
+    label_sel.pack(side='top')
+    btn_sel = Button(frame3, text='갱신', command=lambda: god.retry(frame3, '상품'))
+    btn_sel.pack(side='left', fill="y")
+    god.select(frame3, '상품')
+
+    frame4 = Frame(goods)
+    notebook.add(frame4, text="삭제")
+    primary_del = god.create_box(frame4, '상품번호', 0)
+    btn_del = Button(frame4, text='전송', command=lambda: db_i(f"delete from 상품 where 상품번호 = {primary_del.get()}"))
+    btn_del.grid(row=1, column=1)
+
+    goods.mainloop()
+    main()
+###################################   주문관리   ##################################
+def con_order(root):
+    now = datetime.datetime.now()
+    nowtime = now.strftime('%Y%m%d-%H:%M')
+    root.destroy()       # 메인화면 종료
+    order = Tk()            # 창 생성
+    orde = WindowsCon(order, '주문')  # 창 설정
+    notebook = ttk.Notebook(order, width=400, height=400)  # 노트 생성
+    notebook.pack()
+
+    frame1 = Frame(order)  # 노트1
+    notebook.add(frame1, text="등록")
+    name_insert = orde.create_box(frame1, '이름', 0)
+    phone_insert = orde.create_box(frame1, '연락처(-포함)', 1)
+    add_insert = orde.create_box(frame1, '주소', 2)
+    god_num_insert = orde.create_box(frame1, '상품번호', 3)
+    num_insert = orde.create_box(frame1, '상품수량', 4)
+    btn_insert = Button(frame1, text='전송', command=lambda: db_i(
+        f"insert into 수령인 (이름, 휴대폰번호 , 주소, 상품번호, 상품수량, 주문일자) "
+        f"values('{name_insert.get()}',"
+        f"'{phone_insert.get()}',"
+        f"'{add_insert.get()}',"
+        f"{god_num_insert.get()},"
+        f"{num_insert.get()},"
+        f"'{nowtime}')"
+    ))
+    btn_insert.grid(row=5, column=1)
+
+    frame2 = Frame(order)
+    notebook.add(frame2, text="조회")
+    label = Label(frame2, text='주문번호, 이름, 연락처, 주소, 상품번호, 상품수량, 주문시간(더보기->)')
+    label.pack(side='top')
+    btn_sel = Button(frame2, text='갱신', command=lambda: orde.retry(frame2, '수령인'))
+    btn_sel.pack(side='left', fill="y")
+    orde.select(frame2, '수령인')
+
+    frame3 = Frame(order)
+    notebook.add(frame3, text="삭제")
+    primary_del = orde.create_box(frame3, '주문번호', 0)
+    btn_del = Button(frame3, text='전송', command=lambda: db_i(f"delete from 수령인 where 수령번호 = {primary_del.get()}"))
+    btn_del.grid(row=1, column=1)
+
+    order.mainloop()
+    main()
+
+
+###############################   창고관리    ###########################################
+def con_sto(root):
+    root.destroy()  # 메인화면 종료
+    store = Tk()  # 창 생성
+    sto = WindowsCon(store, '창고')  # 창 설정
+    notebook = ttk.Notebook(store, width=400, height=400)  # 노트 생성
+    notebook.pack()
+
+    frame1 = Frame(store)  # 노트1
+    notebook.add(frame1, text="등록")
+    point_insert = sto.create_box(frame1, '위치', 0)
+    btn_insert = Button(frame1, text='전송', command=lambda: db_i(f"insert into 창고 values('{point_insert.get()}')"))
+    btn_insert.grid(row=3, column=1)
+
+    frame2 = Frame(store)
+    notebook.add(frame2, text="조회")
+    btn_sel = Button(frame2, text='갱신', command=lambda: sto.retry(frame2, '창고'))
+    btn_sel.pack(side='left', fill="y")
+    sto.select(frame2, '창고')
+
+    frame3 = Frame(store)
+    notebook.add(frame3, text="삭제")
+    primary_del = sto.create_box(frame3, '위치', 0)
+    btn_del = Button(frame3, text='전송', command=lambda: db_i(f"delete from 창고 where 위치 = '{primary_del.get()}'"))
+    btn_del.grid(row=1, column=1)
+
+    store.mainloop()
+    main()
+
+
+###################### 메인화면 ###########################################
+
+def main():
+    root = Tk()
+    WindowsCon(root, '허브')
     # 버튼 클릭 이벤트와 핸들러 정의
-        btn1 = Button(root1_2, text="검색", command=okClick2_2_1)
-        btn1.pack()
-        btn2 = Button(root1_2, text="전체보기", command=okClick2_2_2)
-        btn2.pack()
-        
-    def okClick2_3():
-        root1.destroy()
-        i1 = input("수령번호: ")
-        sql = f"delete from 수령인 where 수령번호 = {i1}"
-        try:
-            db_i(sql)
-            print("삭제완료")
-        except:
-            print("삭제불가 상품입니다")
-            
-    def okClick2_4():
-        root1.destroy()
-        global num1
-        num1 = 0
-        return
-  
-    while num1: 
-    # 버튼 클릭 이벤트 핸들러
-        root1 = Tk()
-        root1.geometry("100x200+200+100")
-        lbl = Label(root1, text="주문관리")
-        lbl.pack()
-    # 버튼 클릭 이벤트와 핸들러 정의
-        btn1 = Button(root1, text="등록", command=okClick2_1)
-        btn1.pack()
-        btn3 = Button(root1, text="조회", command=okClick2_2)
-        btn3.pack()
-        btn4 = Button(root1, text="삭제", command=okClick2_3)
-        btn4.pack()
-        btn5 = Button(root1, text="뒤로", command=okClick2_4)
-        btn5.pack()
-        root1.mainloop()
-##########################################################################################
-def okClick3():
-    root.destroy()
-    def okClick3_1():
-        root1.destroy()
-        i1 = input("위 치: ")
-        sql = f"insert into 창고 values('{i1}')"
-        try:
-            db_i(sql)
-            print("입력완료")
-        except:
-            print("없는 위치입니다.")
-    
-    def okClick3_2():
-        root1.destroy()
-        i1 = input("변경할 위치: ")
-        i2 = input("변경될 위치: ")
-        sql = f"update 창고 set 위치 = '{i2}' where 위치 = '{i1}'"
-        try:
-            db_i(sql)
-            print("변경완료")
-        except:
-            print("없는 위치입니다")  
-            
-    def okClick3_3():
-        root1.destroy()
-        def okClick3_3_1():                           
-            root1_3.destroy()                     #검색
-            i1 = input("위 치: ")
-            sql = f"select 위치,상품명 from 상품 where 위치 = '{i1}'"
-            db_s1(sql)
-        def okClick3_3_2():  
-            root1_3.destroy()
-            sql = "select * from 창고"
-            db_s1(sql)     
-            
-        # 버튼 클릭 이벤트 핸들러
-        root1_3 = Tk()
-        root1_3.geometry("100x200+200+100")
-        lbl = Label(root1_3, text="창고조회")
-        lbl.pack()
-    # 버튼 클릭 이벤트와 핸들러 정의
-        btn1 = Button(root1_3, text="검색", command=okClick3_3_1)
-        btn1.pack()
-        btn2 = Button(root1_3, text="전체보기", command=okClick3_3_2)
-        btn2.pack()
-        
-    def okClick3_4():
-        root1.destroy()
-        i1 = input("위 치: ")
-        sql = f"delete from 창고 where 위치 = '{i1}'"
-        try:
-            db_i(sql)
-            print("삭제완료")
-        except:
-            print("삭제불가")
-            
-    def okClick3_5():
-        root1.destroy()
-        global num1
-        num1 = 0
-        return
-  
-    while num1: 
-    # 버튼 클릭 이벤트 핸들러
-        root1 = Tk()
-        root1.geometry("100x200+200+100")
-        lbl = Label(root1, text="창고관리")
-        lbl.pack()
-    # 버튼 클릭 이벤트와 핸들러 정의
-        btn1 = Button(root1, text="등록", command=okClick3_1)
-        btn1.pack()
-        btn2 = Button(root1, text="변경", command=okClick3_2)
-        btn2.pack()
-        btn3 = Button(root1, text="조회", command=okClick3_3)
-        btn3.pack()
-        btn4 = Button(root1, text="삭제", command=okClick3_4)
-        btn4.pack()
-        btn5 = Button(root1, text="뒤로", command=okClick3_5)
-        btn5.pack()
-        root1.mainloop()
-    
-########################################################################################
-def okClick4():
-    root.destroy()
-    global num
-    num = 0
-    return
-###############################################################################
-while num: 
-    num1= 1
-# 버튼 클릭 이벤트 핸들러 
-    root = Tk()             
-    root.geometry("100x200+200+100")
-    lbl = Label(root, text="허브관리")
-    lbl.pack()
-# 버튼 클릭 이벤트와 핸들러 정의
-    btn1 = Button(root, text="상품관리", command=okClick1)
+    btn1 = Button(root, height=4, width=20, text="상품관리", command=lambda: con_goods(root))
+    btn2 = Button(root, height=4, width=20, text="주문관리", command=lambda: con_order(root))
+    btn3 = Button(root, height=4, width=20, text="창고관리", command=lambda: con_sto(root))
     btn1.pack()
-    btn2 = Button(root, text="주문관리", command=okClick2)
     btn2.pack()
-    btn3 = Button(root, text="창고관리", command=okClick3)
     btn3.pack()
-    btn4 = Button(root, text="종   료", command=okClick4)
-    btn4.pack()
     root.mainloop()
+
+
+if __name__ == '__main__':
+    main()
