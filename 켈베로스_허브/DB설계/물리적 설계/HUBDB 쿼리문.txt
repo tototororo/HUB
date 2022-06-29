@@ -1,0 +1,31 @@
+외래키 설정 켜는 문법 
+pragma foreign_keys = 1;  
+(SQLite 는 외래키를 켜줘야 외래키 지정이 됨. 단 테이블 생성은 외래키를 지정한 테이블이 없어도 생성가능. )
+
+create table 상품
+(상품번호 integer not null primary key,
+상품명 text not null,
+재고량 integer not null,
+위치 text not null,
+foreign key(위치) references 창고(위치)
+check (재고량 >= 0));
+
+create table 창고
+(위치 text not null primary key);
+
+create table 수령인
+(수령번호 integer not null primary key,
+이름 text not null,
+휴대폰번호 text not null,
+주소 text not null,
+상품번호 integer not null,
+상품수량 integer not null,
+주문일자 date not null,
+foreign key (상품번호) references 상품(상품번호),
+check (상품수량 >= 1)
+);
+
+
+insert into 창고 values("1층"),("2층"),("3층");
+insert into 상품 values(1,"TV",5,"1층"),(2,"컴퓨터",5,"2층"),(3,"냉장고",3,"3층");
+insert into 수령인 values("유선필","010-0000-0001","신림",1,1,"2022-03-15");
