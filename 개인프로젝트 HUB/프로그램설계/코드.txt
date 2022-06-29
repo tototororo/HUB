@@ -1,0 +1,213 @@
+import sqlite3
+from tkinter import ttk
+from tkinter import *
+from tkinter import messagebox
+import datetime
+
+
+###################### DB 통신 ###########################
+def db_i(sql):
+    try:
+        con = sqlite3.connect("Hubdb")
+        cur = con.cursor()
+        cur.execute("pragma foreign_keys = 1")
+        cur.execute(sql)
+        con.commit()
+        con.close()
+        messagebox.showinfo("Success Example", "등록 완료")
+    except Exception:
+        messagebox.showerror("Error Example", "등록 불가, 참고 중 이거나 올바르지 않은 값입니다")
+
+
+def db_s(sql):
+    con = sqlite3.connect("Hubdb")
+    cur = con.cursor()
+    cur.execute(sql)
+    result = []
+    while True:
+        row = cur.fetchone()
+        if row == None:
+            break
+        result.append(row)
+    con.close()
+    return result
+
+
+###################### 윈도우 생성 ##########################
+class WindowsCon:
+    def __init__(self, window, title):
+        self.window = window
+        self.window.title(title)
+        self.window.geometry("400x400+100+100")
+        self.window.resizable(False, False)
+
+    # noinspection PyMethodMayBeStatic
+    def select(self, frame, target):
+        self.scrollbar = Scrollbar(frame)
+        self.scrollbar.pack(side="right", fill="y")
+        self.listbox = Listbox(frame, yscrollcommand=self.scrollbar.set, width=50)
+        result = db_s(f"select * from {target}")
+        for line in range(len(result)):
+            self.listbox.insert(line, str(result[line]))
+        self.listbox.pack(side="left", fill="y")
+        self.scrollbar["command"] = self.listbox.yview
+
+    def retry(self, frame, target):
+        self.scrollbar.destroy()
+        self.listbox.destroy()
+        self.select(frame, target)
+
+    # noinspection PyMethodMayBeStatic
+    def create_box(self, frame, name, row):
+        label = Label(frame, text=name)
+        ent = Entry(frame)
+        label.grid(row=row, column=0)
+        ent.grid(row=row, column=1)
+        return ent
+
+
+########################### 상품관리  #####################################
+def con_goods(root):
+    root.destroy()  # 메인화면 종료
+    goods = Tk()  # 창 생성
+    god = WindowsCon(goods, '상품')  # 창 설정
+    notebook = ttk.Notebook(goods, width=400, height=400)  # 노트 생성
+    notebook.pack()
+
+    frame1 = Frame(goods)  # 노트1
+    notebook.add(frame1, text="등록")
+    name_insert = god.create_box(frame1, '상품명', 0)
+    num_insert = god.create_box(frame1, '재고량', 1)
+    point_insert = god.create_box(frame1, '위치', 2)
+    btn_insert = Button(frame1, text='전송', command=lambda: db_i(
+        f"insert into 상품(상품명, 재고량 , 위치) values('{name_insert.get()}',"
+        f"{num_insert.get()},"
+        f"'{point_insert.get()}')"
+    ))
+    btn_insert.grid(row=3, column=1)
+
+    frame2 = Frame(goods)
+    notebook.add(frame2, text="변경")
+    name_change = god.create_box(frame2, '상품명', 0)
+    num_change = god.create_box(frame2, '재고량', 1)
+    point_change = god.create_box(frame2, '위치', 2)
+    primary_change = god.create_box(frame2, '상품번호', 3)
+    btn_change = Button(frame2, text='전송', command=lambda: db_i(
+        f"update 상품 set 상품명 = '{name_change.get()}',"
+        f"재고량 = {num_change.get()},"
+        f"위치 = '{point_change.get()}' "
+        f"where 상품번호 = {primary_change.get()}"
+    ))
+    btn_change.grid(row=4, column=1)
+
+    frame3 = Frame(goods)
+    notebook.add(frame3, text="조회")
+    label_sel = Label(frame3, text='상품번호, 상품명, 재고량, 위치')
+    label_sel.pack(side='top')
+    btn_sel = Button(frame3, text='갱신', command=lambda: god.retry(frame3, '상품'))
+    btn_sel.pack(side='left', fill="y")
+    god.select(frame3, '상품')
+
+    frame4 = Frame(goods)
+    notebook.add(frame4, text="삭제")
+    primary_del = god.create_box(frame4, '상품번호', 0)
+    btn_del = Button(frame4, text='전송', command=lambda: db_i(f"delete from 상품 where 상품번호 = {primary_del.get()}"))
+    btn_del.grid(row=1, column=1)
+
+    goods.mainloop()
+    main()
+
+
+###################################   주문관리   ##################################
+def con_order(root):
+    now = datetime.datetime.now()
+    nowtime = now.strftime('%Y%m%d-%H:%M')
+    root.destroy()       # 메인화면 종료
+    order = Tk()            # 창 생성
+    orde = WindowsCon(order, '주문')  # 창 설정
+    notebook = ttk.Notebook(order, width=400, height=400)  # 노트 생성
+    notebook.pack()
+
+    frame1 = Frame(order)  # 노트1
+    notebook.add(frame1, text="등록")
+    name_insert = orde.create_box(frame1, '이름', 0)
+    phone_insert = orde.create_box(frame1, '연락처(-포함)', 1)
+    add_insert = orde.create_box(frame1, '주소', 2)
+    god_num_insert = orde.create_box(frame1, '상품번호', 3)
+    num_insert = orde.create_box(frame1, '상품수량', 4)
+    btn_insert = Button(frame1, text='전송', command=lambda: db_i(
+        f"insert into 수령인 (이름, 휴대폰번호 , 주소, 상품번호, 상품수량, 주문일자) "
+        f"values('{name_insert.get()}',"
+        f"'{phone_insert.get()}',"
+        f"'{add_insert.get()}',"
+        f"{god_num_insert.get()},"
+        f"{num_insert.get()},"
+        f"'{nowtime}')"
+    ))
+    btn_insert.grid(row=5, column=1)
+
+    frame2 = Frame(order)
+    notebook.add(frame2, text="조회")
+    label = Label(frame2, text='주문번호, 이름, 연락처, 주소, 상품번호, 상품수량, 주문시간(더보기->)')
+    label.pack(side='top')
+    btn_sel = Button(frame2, text='갱신', command=lambda: orde.retry(frame2, '수령인'))
+    btn_sel.pack(side='left', fill="y")
+    orde.select(frame2, '수령인')
+
+    frame3 = Frame(order)
+    notebook.add(frame3, text="삭제")
+    primary_del = orde.create_box(frame3, '주문번호', 0)
+    btn_del = Button(frame3, text='전송', command=lambda: db_i(f"delete from 수령인 where 수령번호 = {primary_del.get()}"))
+    btn_del.grid(row=1, column=1)
+
+    order.mainloop()
+    main()
+
+
+###############################   창고관리    ###########################################
+def con_sto(root):
+    root.destroy()  # 메인화면 종료
+    store = Tk()  # 창 생성
+    sto = WindowsCon(store, '창고')  # 창 설정
+    notebook = ttk.Notebook(store, width=400, height=400)  # 노트 생성
+    notebook.pack()
+
+    frame1 = Frame(store)  # 노트1
+    notebook.add(frame1, text="등록")
+    point_insert = sto.create_box(frame1, '위치', 0)
+    btn_insert = Button(frame1, text='전송', command=lambda: db_i(f"insert into 창고 values('{point_insert.get()}')"))
+    btn_insert.grid(row=3, column=1)
+
+    frame2 = Frame(store)
+    notebook.add(frame2, text="조회")
+    btn_sel = Button(frame2, text='갱신', command=lambda: sto.retry(frame2, '창고'))
+    btn_sel.pack(side='left', fill="y")
+    sto.select(frame2, '창고')
+
+    frame3 = Frame(store)
+    notebook.add(frame3, text="삭제")
+    primary_del = sto.create_box(frame3, '위치', 0)
+    btn_del = Button(frame3, text='전송', command=lambda: db_i(f"delete from 창고 where 위치 = '{primary_del.get()}'"))
+    btn_del.grid(row=1, column=1)
+
+    store.mainloop()
+    main()
+
+
+###################### 메인화면 ###########################################
+
+def main():
+    root = Tk()
+    WindowsCon(root, '허브')
+    # 버튼 클릭 이벤트와 핸들러 정의
+    btn1 = Button(root, height=4, width=20, text="상품관리", command=lambda: con_goods(root))
+    btn2 = Button(root, height=4, width=20, text="주문관리", command=lambda: con_order(root))
+    btn3 = Button(root, height=4, width=20, text="창고관리", command=lambda: con_sto(root))
+    btn1.pack()
+    btn2.pack()
+    btn3.pack()
+    root.mainloop()
+
+
+if __name__ == '__main__':
+    main()
